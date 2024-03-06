@@ -1,3 +1,5 @@
+package ru.foxstudios.earthbridge
+
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
