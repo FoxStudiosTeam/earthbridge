@@ -20,6 +20,7 @@ fun main(args: Array<String>) {
                     if (incoming is DatagramPacket) {
                         val packet = incoming
                         val content = packet.content().toString(StandardCharsets.UTF_8)
+                        println(content.toByteArray().size)
                         println(content)
 
                         val byteBuf = Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8)
