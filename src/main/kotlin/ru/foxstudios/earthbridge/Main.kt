@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
     runBlocking {
         println("da")
     }
-    val server = UdpServer.create().port(25577).host("127.0.0.1").option(ChannelOption.SO_BROADCAST, true)
+    val server = UdpServer.create().port(25577).host("127.0.0.1").wiretap(true).option(ChannelOption.SO_BROADCAST, true)
         .handle { inbound, outbound ->
             val inFlux: Flux<DatagramPacket> = inbound.receiveObject()
                 .handle { incoming, sink ->
