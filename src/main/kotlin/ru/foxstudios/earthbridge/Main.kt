@@ -12,14 +12,18 @@ import java.nio.charset.StandardCharsets
 
 
 fun main(args: Array<String>) {
-    val server = UdpServer.create().port(25577).host("127.0.0.1").wiretap(true).option(ChannelOption.SO_RCVBUF, Int.MAX_VALUE).option(ChannelOption.SO_BROADCAST, true)
+    val server = UdpServer.create().port(25577).host("127.0.0.1").wiretap(true).option(ChannelOption.SO_BROADCAST, true)
         .handle { inbound, outbound ->
             val inFlux: Flux<DatagramPacket> = inbound.receiveObject()
                 .handle { incoming, sink ->
                     if (incoming is DatagramPacket) {
-                        val content = incoming.content()
-                        println(content.toString(StandardCharsets.UTF_8))
-                        val response = DatagramPacket(Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8), incoming.sender())
+                        val packet = incoming
+                        val content = packet.content().toString(StandardCharsets.UTF_8)
+                        println(content.toByteArray().size)
+                        println(content)
+
+                        val byteBuf = Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8)
+                        val response = DatagramPacket(byteBuf, packet.sender())
                         sink.next(response)
                     }
                 }
