@@ -1,6 +1,7 @@
 package ru.foxstudios.earthbridge
 
 import com.rabbitmq.client.impl.nio.ByteBufferOutputStream
+import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelOption
 import io.netty.channel.socket.DatagramPacket
@@ -17,6 +18,7 @@ fun main(args: Array<String>) {
     runBlocking {
         println("da")
     }
+    var data = ""
     val server = UdpServer.create().port(25577).host("127.0.0.1").wiretap(true).option(ChannelOption.SO_BROADCAST, true)
         .handle { inbound, outbound ->
             val inFlux: Flux<DatagramPacket> = inbound.receiveObject()
@@ -25,12 +27,14 @@ fun main(args: Array<String>) {
                         val packet = incoming
                         val content = packet.content()
                         val buffContent = content.toString(StandardCharsets.UTF_8)
-                        val writer = BufferedWriter(OutputStreamWriter(System.out))
-                        writer.write(buffContent.toByteArray().size)
-                        writer.flush()
-                        writer.write(buffContent)
-                        writer.flush()
-                        val byteBuf = Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8)
+                        val byteBuf: ByteBuf = if (buffContent != "*") {
+                            data += content
+                            Unpooled.copiedBuffer("*", StandardCharsets.UTF_8)
+                        } else {
+                            giveInfo(data)
+                            data = ""
+                            Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8)
+                        }
                         val response = DatagramPacket(byteBuf, packet.sender())
                         sink.next(response)
                     }
@@ -38,5 +42,13 @@ fun main(args: Array<String>) {
             return@handle outbound.sendObject(inFlux)
         }
     server.bindNow().onDispose().block()
+}
+
+fun giveInfo(buffContent : String){
+    val writer = BufferedWriter(OutputStreamWriter(System.out))
+    writer.write(buffContent.toByteArray().size)
+    writer.flush()
+    writer.write(buffContent)
+    writer.flush()
 }
 
