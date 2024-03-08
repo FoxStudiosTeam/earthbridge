@@ -1,17 +1,12 @@
 package ru.foxstudios.earthbridge
 
-import com.rabbitmq.client.impl.nio.ByteBufferOutputStream
-import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelOption
 import io.netty.channel.socket.DatagramPacket
 import kotlinx.coroutines.runBlocking
-import org.apache.commons.io.FileUtils
 import reactor.core.publisher.Flux
-import reactor.core.scheduler.Schedulers
 import reactor.netty.udp.UdpServer
 import java.io.BufferedWriter
-import java.io.File
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
 
@@ -21,18 +16,15 @@ fun main(args: Array<String>) {
         println("da")
     }
     var data = arrayOf<String>()
-    val server = UdpServer.create().port(25577).host("127.0.0.1").wiretap(true).option(ChannelOption.SO_BROADCAST, true)
+    val server = UdpServer.create().port(25577).host("127.0.0.1").wiretap(true).option(ChannelOption.SO_RCVBUF, Int.MAX_VALUE).option(ChannelOption.SO_BROADCAST, true)
         .handle { inbound, outbound ->
             val inFlux: Flux<DatagramPacket> = inbound.receiveObject()
                 .handle { incoming, sink ->
                     if (incoming is DatagramPacket) {
-                        val packet = incoming
-                        val content = packet.content()
-                        println(content)
-                        val response = DatagramPacket(Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8), packet.sender())
+                        val content = incoming.content()
+                        println(content.toString(StandardCharsets.UTF_8))
+                        val response = DatagramPacket(Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8), incoming.sender())
                         sink.next(response)
-                    } else {
-                        println(inbound)
                     }
                 }
             return@handle outbound.sendObject(inFlux)
