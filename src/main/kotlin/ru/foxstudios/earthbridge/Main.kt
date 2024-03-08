@@ -1,5 +1,6 @@
 package ru.foxstudios.earthbridge
 
+import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelOption
 import io.netty.channel.FixedRecvByteBufAllocator
@@ -12,6 +13,7 @@ import java.nio.charset.StandardCharsets
 
 
 fun main(args: Array<String>) {
+    var text = ""
     val server = UdpServer.create().port(25577).host("127.0.0.1").wiretap(true).option(ChannelOption.SO_BROADCAST, true).option(
         ChannelOption.RCVBUF_ALLOCATOR, FixedRecvByteBufAllocator(Int.MAX_VALUE))
         .handle { inbound, outbound ->
@@ -21,10 +23,17 @@ fun main(args: Array<String>) {
                         println("receive!!!")
                         val packet = incoming
                         val content = packet.content().toString(StandardCharsets.UTF_8)
+                        text += content
                         println(content.toByteArray().size)
                         println(content)
 
-                        val byteBuf = Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8)
+                        val byteBuf : ByteBuf?
+
+                        if(content.last() == '}'){
+                            byteBuf = Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8)
+                        }else{
+                            byteBuf = Unpooled.copiedBuffer("*", StandardCharsets.UTF_8)
+                        }
                         val response = DatagramPacket(byteBuf, packet.sender())
                         sink.next(response)
                     }
