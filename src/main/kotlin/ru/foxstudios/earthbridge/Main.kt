@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets
 
 fun main(args: Array<String>) {
     val server = UdpServer.create().port(25577).host("127.0.0.1").wiretap(true).option(ChannelOption.SO_BROADCAST, true).option(
-        ChannelOption.SO_RCVBUF, Int.MAX_VALUE)
+        ChannelOption.SO_RCVBUF, 2000)
         .handle { inbound, outbound ->
             val inFlux: Flux<DatagramPacket> = inbound.receiveObject()
                 .handle { incoming, sink ->
