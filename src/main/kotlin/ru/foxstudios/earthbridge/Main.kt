@@ -18,6 +18,7 @@ fun main(args: Array<String>) {
             val inFlux: Flux<DatagramPacket> = inbound.receiveObject()
                 .handle { incoming, sink ->
                     if (incoming is DatagramPacket) {
+                        println("receive!!!")
                         val packet = incoming
                         val content = packet.content().toString(StandardCharsets.UTF_8)
                         println(content.toByteArray().size)
