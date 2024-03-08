@@ -27,12 +27,10 @@ fun main(args: Array<String>) {
                         println(content.toByteArray().size)
                         println(content)
 
-                        val byteBuf : ByteBuf?
-
-                        if(content.last() == '}'){
-                            byteBuf = Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8)
+                        val byteBuf : ByteBuf? = if(content.last() == '}'){
+                            Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8)
                         }else{
-                            byteBuf = Unpooled.copiedBuffer("*", StandardCharsets.UTF_8)
+                            Unpooled.copiedBuffer("*", StandardCharsets.UTF_8)
                         }
                         val response = DatagramPacket(byteBuf, packet.sender())
                         sink.next(response)
