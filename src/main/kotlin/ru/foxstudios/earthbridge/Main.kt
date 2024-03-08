@@ -2,6 +2,7 @@ package ru.foxstudios.earthbridge
 
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelOption
+import io.netty.channel.FixedRecvByteBufAllocator
 import io.netty.channel.socket.DatagramPacket
 import kotlinx.coroutines.runBlocking
 import reactor.core.publisher.Flux
@@ -13,7 +14,7 @@ import java.nio.charset.StandardCharsets
 
 fun main(args: Array<String>) {
     val server = UdpServer.create().port(25577).host("127.0.0.1").wiretap(true).option(ChannelOption.SO_BROADCAST, true).option(
-        ChannelOption.SO_RCVBUF, 2000)
+        ChannelOption.RCVBUF_ALLOCATOR, FixedRecvByteBufAllocator(2600))
         .handle { inbound, outbound ->
             val inFlux: Flux<DatagramPacket> = inbound.receiveObject()
                 .handle { incoming, sink ->
