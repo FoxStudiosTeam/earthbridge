@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
                         val content = packet.content()
                         val buffContent = content.toString(StandardCharsets.UTF_8)
                         val byteBuf: ByteBuf = if (buffContent != "*") {
-                            data += content
+                            data += buffContent
                             Unpooled.copiedBuffer("*", StandardCharsets.UTF_8)
                         } else {
                             giveInfo(data)
