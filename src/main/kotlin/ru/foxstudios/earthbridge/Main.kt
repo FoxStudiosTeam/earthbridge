@@ -20,15 +20,15 @@ fun main(args: Array<String>) {
     val server = UdpServer.create().port(25577).host("127.0.0.1").wiretap(true).option(ChannelOption.SO_BROADCAST, true)
         .handle { inbound, outbound ->
             val inFlux: Flux<DatagramPacket> = inbound.receiveObject()
-                .publishOn(Schedulers.boundedElastic())
                 .handle { incoming, sink ->
                     if (incoming is DatagramPacket) {
                         val packet = incoming
-                        val content = packet.content().toString(StandardCharsets.UTF_8)
+                        val content = packet.content()
+                        val buffContent = content.toString(StandardCharsets.UTF_8)
                         val writer = BufferedWriter(OutputStreamWriter(System.out))
-                        writer.write(content.toByteArray().size)
+                        writer.write(buffContent.toByteArray().size)
                         writer.flush()
-                        writer.write(content)
+                        writer.write(buffContent)
                         writer.flush()
                         val byteBuf = Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8)
                         val response = DatagramPacket(byteBuf, packet.sender())
