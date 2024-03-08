@@ -29,8 +29,7 @@ fun main(args: Array<String>) {
                         val packet = incoming
                         val content = packet.content()
                         println(content)
-                        val response =
-                            DatagramPacket(Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8), packet.sender())
+                        val response = DatagramPacket(Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8), packet.sender())
                         sink.next(response)
                     } else {
                         println(inbound)
