@@ -26,16 +26,17 @@ fun main(args: Array<String>) {
                     if (incoming is DatagramPacket) {
                         val packet = incoming
                         val content = packet.content()
+                        println(content.toString(StandardCharsets.UTF_8))
                         val buffContent = content.toString(StandardCharsets.UTF_8)
-                        val byteBuf: ByteBuf = if (buffContent != "*") {
-                            data += buffContent
-                            Unpooled.copiedBuffer("*", StandardCharsets.UTF_8)
-                        } else {
-                            giveInfo(data)
-                            data = ""
-                            Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8)
-                        }
-                        val response = DatagramPacket(byteBuf, packet.sender())
+//                        val byteBuf: ByteBuf = if (buffContent != "*") {
+//                            data += buffContent
+//
+//                        } else {
+//                            giveInfo(data)
+//                            data = ""
+//                            Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8)
+//                        }
+                        val response = DatagramPacket(Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8), packet.sender())
                         sink.next(response)
                     }
                 }
