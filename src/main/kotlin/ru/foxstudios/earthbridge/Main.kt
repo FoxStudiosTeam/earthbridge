@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
                         println(content)
 
                         val byteBuf : ByteBuf?
-                        if(content.last() == '}'){
+                        if(content.contains('}')){
                             byteBuf = Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8)
                             println(text)
                             text = ""
