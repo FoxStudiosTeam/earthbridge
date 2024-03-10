@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets
 
 fun main(args: Array<String>) {
     var text = ""
-    val server = UdpServer.create().port(28961).host(System.getenv("EARTH_BRIDGE_IP")).wiretap(true).option(ChannelOption.SO_BROADCAST, true).option(
+    val server = UdpServer.create().port(28961).wiretap(true).option(ChannelOption.SO_BROADCAST, true).option(
         ChannelOption.RCVBUF_ALLOCATOR, FixedRecvByteBufAllocator(Int.MAX_VALUE))
         .handle { inbound, outbound ->
             val inFlux: Flux<DatagramPacket> = inbound.receiveObject()
