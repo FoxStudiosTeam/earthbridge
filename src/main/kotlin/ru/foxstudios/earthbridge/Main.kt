@@ -5,7 +5,9 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelOption
 import io.netty.channel.FixedRecvByteBufAllocator
 import io.netty.channel.socket.DatagramPacket
+import io.netty.handler.logging.LogLevel
 import reactor.core.publisher.Flux
+import reactor.netty.transport.logging.AdvancedByteBufFormat
 import reactor.netty.udp.UdpServer
 import java.io.BufferedWriter
 import java.io.OutputStreamWriter
@@ -14,8 +16,9 @@ import java.nio.charset.StandardCharsets
 
 fun main(args: Array<String>) {
     var text = ""
-    val server = UdpServer.create().port(28961).host(System.getenv("EARTH_BRIDGE_IP")).wiretap(true).option(ChannelOption.SO_BROADCAST, true).option(
-        ChannelOption.RCVBUF_ALLOCATOR, FixedRecvByteBufAllocator(Int.MAX_VALUE))
+    val server = UdpServer.create().port(28961).host(System.getenv("EARTH_BRIDGE_IP"))
+        .wiretap("logger-name", LogLevel.DEBUG, AdvancedByteBufFormat.TEXTUAL).option(ChannelOption.SO_BROADCAST, true)
+        .option(ChannelOption.RCVBUF_ALLOCATOR, FixedRecvByteBufAllocator(Int.MAX_VALUE))
         .handle { inbound, outbound ->
             val inFlux: Flux<DatagramPacket> = inbound.receiveObject()
                 .handle { incoming, sink ->
@@ -38,20 +41,9 @@ fun main(args: Array<String>) {
                         val response = DatagramPacket(byteBuf, packet.sender())
                         sink.next(response)
                     }
-                    else{
-                        println("debil")
-                    }
                 }
             return@handle outbound.sendObject(inFlux)
         }
     server.bindNow().onDispose().block()
-}
-
-fun giveInfo(buffContent: String) {
-    val writer = BufferedWriter(OutputStreamWriter(System.out))
-    writer.write(buffContent.toByteArray().size)
-    writer.flush()
-    writer.write(buffContent)
-    writer.flush()
 }
 

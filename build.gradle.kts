@@ -7,6 +7,9 @@ plugins {
 
 group = "ru.foxstudios"
 version = "1.0-SNAPSHOT"
+application {
+    mainClass.set("ru.foxstudios.earthbridge.MainKt")
+}
 
 repositories {
     mavenCentral()
@@ -25,14 +28,7 @@ dependencies {
     implementation("com.rabbitmq:amqp-client:5.20.0")
     // https://mvnrepository.com/artifact/io.projectreactor.netty/reactor-netty
     implementation("io.projectreactor.netty:reactor-netty:1.1.16")
-    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api
-    implementation("org.apache.logging.log4j:log4j-api:2.23.0")
-    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
-    implementation("org.apache.logging.log4j:log4j-core:2.23.0")
-    // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-    testImplementation("ch.qos.logback:logback-classic:1.5.3")
-    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
-    testImplementation("org.slf4j:slf4j-simple:2.0.12")
+
 
 
     testImplementation(kotlin("test"))
@@ -45,16 +41,24 @@ tasks.test {
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "21"
 }
+
 tasks.withType<Jar> {
+    enabled = true
+    isZip64 = true
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    archiveFileName.set("${project.name}-$version.jar")
     manifest {
         attributes["Main-Class"] = application.mainClass
     }
-    configurations["compileClasspath"].forEach { file: File ->
-        from(zipTree(file.absoluteFile))
+    from(sourceSets.main.get().output)
+    dependsOn(configurations.compileClasspath)
+    from({
+        configurations.compileClasspath.get().filter {
+            it.name.endsWith("jar")
+        }.map { zipTree(it) }
+    }) {
+        exclude("META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA")
     }
-    exclude("META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA")
 }
-application {
-    mainClass.set("ru.foxstudios.earthbridge.MainKt")
-}
+

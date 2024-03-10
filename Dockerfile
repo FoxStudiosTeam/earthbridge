@@ -4,6 +4,5 @@ LABEL authors="AgniaEndie"
 LABEL authors="GekkStr"
 LABEL autors="xxlegendzxx22"
 WORKDIR /earthbridge
-COPY . /earthbridge
-RUN gradle jar
-ENTRYPOINT ["java","-XX:+UseZGC","-jar", "/earthbridge/build/libs/earthbridge-1.0-SNAPSHOT.jar"]
+COPY . /earthbridge/build/libs/earthbridge-1.0-SNAPSHOT.jar
+ENTRYPOINT ["java","-jar", "/earthbridge/build/libs/earthbridge-1.0-SNAPSHOT.jar"]
