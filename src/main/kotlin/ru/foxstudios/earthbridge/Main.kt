@@ -1,5 +1,6 @@
 package ru.foxstudios.earthbridge
 
+import com.rabbitmq.client.ConnectionFactory
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelOption
@@ -9,13 +10,15 @@ import io.netty.handler.logging.LogLevel
 import reactor.core.publisher.Flux
 import reactor.netty.transport.logging.AdvancedByteBufFormat
 import reactor.netty.udp.UdpServer
-import java.io.BufferedWriter
-import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
 
 
 fun main(args: Array<String>) {
     var text = ""
+    val factory = ConnectionFactory()
+    factory.host = "localhost"
+    factory.port = 30009
+    val connection = factory.newConnection()
     val server = UdpServer.create().port(28961).host(System.getenv("EARTH_BRIDGE_IP"))
         .wiretap("logger-name", LogLevel.DEBUG, AdvancedByteBufFormat.TEXTUAL).option(ChannelOption.SO_BROADCAST, true)
         .option(ChannelOption.RCVBUF_ALLOCATOR, FixedRecvByteBufAllocator(Int.MAX_VALUE))
@@ -34,6 +37,14 @@ fun main(args: Array<String>) {
                         if(content.contains('}')){
                             byteBuf = Unpooled.copiedBuffer("ok", StandardCharsets.UTF_8)
                             println(text)
+                            val channel = connection.createChannel()
+                            try{
+                                channel.queueDeclare("earth-queue", false, false, false, null);
+                            }catch (e:Exception){
+                                println(e.message)
+                            }
+                            channel.basicPublish("","earth-queue",null,text.toByteArray())
+
                             text = ""
                         }else{
                             byteBuf = Unpooled.copiedBuffer("*", StandardCharsets.UTF_8)
